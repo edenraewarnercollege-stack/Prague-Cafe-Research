@@ -6,8 +6,9 @@ suppressPackageStartupMessages(library(ggplot2))
 theme_set(theme_bw(base_size = 11))
 
 setup_dirs <- function() {
-  dir.create("../report/tables",  recursive = TRUE, showWarnings = FALSE)
-  dir.create("../report/figures", recursive = TRUE, showWarnings = FALSE)
+  dir.create("analysis/tables",  recursive = TRUE, showWarnings = FALSE)
+  dir.create("analysis/figures", recursive = TRUE, showWarnings = FALSE)
+  dir.create("analysis/interim", recursive = TRUE, showWarnings = FALSE)
 }
 
 # names used to link the descriptive table (02) to the analyses (03)
@@ -19,7 +20,7 @@ VN <- list(esp  = "Espresso price (CZK)",
 G_ALL  <- "All cafes"
 G_DIFF <- "Paired differences"
 
-load_data <- function(file = "dataset.csv") {
+load_data <- function(file = "analysis/dataset.csv") {
   d <- read.csv(file, na.strings = c("", "NA"), stringsAsFactors = FALSE)
   ct <- tolower(trimws(d$cafe_type))
   d$cafe_type_f <- factor(ct, levels = c("independent", "local chain", "international chain"),
@@ -51,10 +52,10 @@ write_tex <- function(df, name, align = NULL) {
   lines <- c(paste0("\\begin{tabular}{", align, "}"), "\\toprule",
              paste0(hdr, " \\\\"), "\\midrule", paste0(body, " \\\\"),
              "\\bottomrule", "\\end{tabular}")
-  writeLines(lines, file.path("../report/tables", paste0(name, ".tex")))
+  writeLines(lines, file.path("analysis/tables", paste0(name, ".tex")))
 }
 save_fig <- function(p, name, w = 6.5, h = 4.2)
-  ggsave(file.path("../report/figures", paste0(name, ".pdf")), p, width = w, height = h)
+  ggsave(file.path("analysis/figures", paste0(name, ".pdf")), p, width = w, height = h)
 
 # ---- statistics ----
 skewness <- function(x) { x <- x[!is.na(x)]; m <- mean(x); mean((x - m)^3) / mean((x - m)^2)^1.5 }
@@ -131,7 +132,7 @@ save_diag <- function(model, name) {                      # residual-vs-fitted +
     labs(x = "Fitted values", y = "Residuals", title = "Residuals vs fitted")
   p2 <- ggplot(df, aes(sample = std)) + stat_qq() + stat_qq_line(colour = "red") +
     labs(x = "Theoretical quantiles", y = "Standardised residuals", title = "Normal Q-Q")
-  grDevices::pdf(file.path("../report/figures", paste0(name, ".pdf")), width = 9, height = 4)
+  grDevices::pdf(file.path("analysis/figures", paste0(name, ".pdf")), width = 9, height = 4)
   grid::grid.newpage()
   grid::pushViewport(grid::viewport(layout = grid::grid.layout(1, 2)))
   print(p1, vp = grid::viewport(layout.pos.row = 1, layout.pos.col = 1))

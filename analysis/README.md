@@ -1,12 +1,30 @@
 # Analysis
 
-This folder contains the statistical analysis outputs and supporting materials for the Prague café pricing project.
+This folder contains the reproducible R workflow, source data, analysis outputs, and the LaTeX source for the report.
 
-Suggested contents:
+## Files and folders
 
-- Analysis scripts and model outputs
-- Summary statistics and hypothesis-test results
-- Regression and robustness-check results
-- Tables and figures used in the report and presentation
+- `01_cleaning.R`: reads `raw_data.csv` and creates `dataset.csv`.
+- `02_descriptive.R`: creates descriptive tables/figures and the method-decision file.
+- `03_analysis.R`: runs analyses A1–A10 and creates result tables/figures.
+- `helpers.R`: shared functions used by the analysis scripts.
+- `raw_data.csv`: original collected data.
+- `dataset.csv`: cleaned analysis dataset.
+- `tables/`: LaTeX tables and diagnostic check tables.
+- `figures/`: PDF figures and diagnostic plots.
+- `interim/`: intermediate files produced by the workflow, including `D_decisions.csv`.
+- `main (1).tex`: LaTeX source for the report.
 
-The final analysis files should be added here once their values have been reconciled with the submitted report and presentation. This README is a folder guide; it does not itself contain or validate statistical results.
+## Run the analysis
+
+Run the scripts from the repository root, in this order:
+
+```r
+source("analysis/01_cleaning.R")
+source("analysis/02_descriptive.R")
+source("analysis/03_analysis.R")
+```
+
+The scripts expect the R packages used in the source files to be installed. The LaTeX report source should be compiled with the working directory set to this `analysis/` folder so its relative `tables/` and `figures/` paths resolve.
+
+Generated outputs are saved inside this folder.

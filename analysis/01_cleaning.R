@@ -7,8 +7,8 @@
 library(tidyverse)
 library(lubridate)
 
-raw_path   <- "analysis/2__Data_Collection_Sheet_-_Sheet1.csv"
-clean_path <- "analysis/cafes_clean.csv"
+raw_path   <- "analysis/raw_data.csv"
+clean_path <- "analysis/dataset.csv"
 
 raw <- read_csv(raw_path, col_types = cols(.default = col_character()),
                 na = c("", "NA"))
@@ -124,8 +124,8 @@ cat("Clean rows:", nrow(clean), "\n")
 library(tidyverse)
 library(lubridate)
 
-raw_path   <- "analysis/2__Data_Collection_Sheet_-_Sheet1.csv"
-clean_path <- "analysis/cafes_clean.csv"
+raw_path   <- "analysis/raw_data.csv"
+clean_path <- "analysis/dataset.csv"
 
 if (!file.exists(raw_path)) {
   stop("Raw file not found at '", raw_path, "'. Working directory is: ", getwd(),

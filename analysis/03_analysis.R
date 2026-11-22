@@ -8,8 +8,7 @@
 # (they are written at the top of each block). Nothing here is exploratory
 # unless it is labelled so.
 # ============================================================
-if (!file.exists("interim/helpers.R") && file.exists("analysis/interim/helpers.R")) setwd("analysis")
-source("interim/helpers.R")
+source("analysis/helpers.R")
 setup_dirs()
 for (pk in c("sandwich", "lmtest"))
   if (!requireNamespace(pk, quietly = TRUE)) stop("Please run: install.packages('", pk, "')")
@@ -18,7 +17,7 @@ d <- load_data(); N <- nrow(d)
 cat("Cafes in dataset.csv:", N, "\n")
 
 # ---- parametric / non-parametric decisions come from the descriptive table ----
-dec <- read.csv("interim/D_decisions.csv", stringsAsFactors = FALSE)
+dec <- read.csv("analysis/interim/D_decisions.csv", stringsAsFactors = FALSE)
 get_dec <- function(variable, groups, col) {
   r <- dec[dec$variable == variable & dec$group %in% groups, ]
   if (nrow(r) != length(groups)) stop("Decision missing in D_decisions.csv for: ", variable)
