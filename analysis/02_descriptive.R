@@ -7,8 +7,7 @@
 #         interim/D_decisions.csv (read by 03_analysis.R)
 # Packages: ggplot2.  Run from the "analysis" folder.
 # ============================================================
-if (!file.exists("interim/helpers.R") && file.exists("analysis/interim/helpers.R")) setwd("analysis")
-source("interim/helpers.R")
+source("analysis/helpers.R")
 setup_dirs()
 d <- load_data()
 cat("Cafes in dataset.csv:", nrow(d), "\n")
@@ -86,7 +85,7 @@ C <- rbind(cat_tab("Cafe type", d$cafe_type_f), cat_tab("Roastery", d$roastery_f
 write_tex(C, "D_cat_table", align = "llrrr")
 
 write.csv(tab[, c("variable", "group", "normal", "clt", "parametric")],
-          "interim/D_decisions.csv", row.names = FALSE)
+          "analysis/interim/D_decisions.csv", row.names = FALSE)
 
 # ---- plots ----
 pl <- do.call(rbind, lapply(specs, function(s) {
