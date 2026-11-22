@@ -1,35 +1,29 @@
-# Prague Café Price Research
+# Prague Café Data Analytics Project
 
-Research project examining dine-in coffee prices in cafés across Prague, Czechia.
+This repository contains the submitted project on dine-in coffee prices and café characteristics in Prague.
 
-## Project status
+## Final submission files
 
-This repository has been created to organise the research materials, analysis code, report source, and presentation. Files will be added as they are provided and checked.
+- **[Final written report (PDF)](report/ERDW%20-%20FINAL_DATA_ANALYTICS_PROJECT.pdf)**
+- **[Final presentation (PDF)](presentation/DATA_ANALYSIS_PRESENTATION.pdf)**
 
-**Important:** Statistical results and report figures should be treated as provisional until reconciled against the final analysis output and the LaTeX report compiles successfully.
+## Supporting materials
 
-## Planned structure
+- `analysis/dataset.csv` — analysis dataset.
+- `analysis/raw_data.csv` — collected source data.
+- `analysis/01_cleaning.R`, `analysis/02_descriptive.R`, and `analysis/03_analysis.R` — R scripts.
+- `analysis/helpers.R` — shared analysis functions.
+- `analysis/` — supporting statistical tables, figures, diagnostics, and LaTeX report source.
 
-- `data/` — datasets used in the analysis (publish only if sharing is permitted; remove personal or sensitive information)
-- `scripts/` — R scripts for cleaning, descriptive statistics, and statistical tests
-- `report/` — LaTeX report source and supporting tables/figures
-- `presentation/` — Beamer presentation source and assets
-- `README.md` — project overview and file guide
+## Notes on reproducibility
 
-## Research notes
+The submitted report and presentation PDFs are provided as the final reading copies. The R scripts and supporting analysis files are included for transparency and review. The full R workflow has not been independently rerun from a fresh clone, so the scripts should not be treated as runtime-verified.
 
-The study concerns dine-in coffee prices in a sample of Prague cafés. The exact sample definition, variables, benchmark assumptions, statistical results, and exclusions should be documented from the final analysis files rather than inferred.
+The LaTeX source is included as supporting material; the final report PDF above is the submitted version.
 
-## Reproducibility
+## Repository structure
 
-When the final scripts are added, this section should record:
+- `analysis/` — data, R scripts, statistical outputs, and report source.
+- `report/` — final written report PDF.
+- `presentation/` — final presentation PDF.
 
-- R version and package versions
-- The order in which scripts should be run
-- Input data requirements and any access restrictions
-- Random seeds and resampling settings
-- The date and source of any external price or exchange-rate benchmark
-
-## Data and licensing
-
-Do not upload passwords, access tokens, private personal information, or data you do not have permission to redistribute. Because this repository is public, anyone can view and download its contents.
