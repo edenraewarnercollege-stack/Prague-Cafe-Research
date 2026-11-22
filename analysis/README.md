@@ -1,12 +1,21 @@
-# Analysis
+# Analysis materials
 
-This folder contains the statistical analysis outputs and supporting materials for the Prague café pricing project.
+This folder contains the data and supporting materials for the Prague café price analysis.
 
-Suggested contents:
+## Main files
 
-- Analysis scripts and model outputs
-- Summary statistics and hypothesis-test results
-- Regression and robustness-check results
-- Tables and figures used in the report and presentation
+- `raw_data.csv` — collected source data.
+- `dataset.csv` — analysis dataset used for the reported results.
+- `01_cleaning.R` — data-cleaning script.
+- `02_descriptive.R` — descriptive statistics and method-selection script.
+- `03_analysis.R` — analyses A1–A10.
+- `helpers.R` — shared functions.
+- `main (1).tex` — LaTeX source for the written report.
 
-The final analysis files should be added here once their values have been reconciled with the submitted report and presentation. This README is a folder guide; it does not itself contain or validate statistical results.
+## Supporting outputs
+
+The tables (`.tex`), figures and diagnostic PDFs in this folder are supporting outputs used in the analysis and report.
+
+## Reproducibility note
+
+The final report PDF in the repository's `report/` folder is the submitted reading copy. The scripts and source files are included for review. The complete R workflow has not been independently rerun from a fresh clone, so runtime reproducibility has not been verified.
