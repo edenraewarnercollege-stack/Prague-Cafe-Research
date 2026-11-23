@@ -172,3 +172,6 @@ cat("\n=== Decision table ===\n"); print(D, row.names = FALSE)
 cat("\n=== Descriptive statistics ===\n"); print(S, row.names = FALSE)
 cat("\n=== Categorical variables ===\n"); print(C, row.names = FALSE)
 cat("\nSaved tables, figures and interim/D_decisions.csv\n")
+
+# Return to the caller's repository-root context for the next script.
+setwd("..")
