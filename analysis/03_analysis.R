@@ -1,15 +1,14 @@
 # ============================================================
-# 03_analysis.R - answers the ten research questions (A1-A10, Price topic)
-# Input : dataset.csv, interim/D_decisions.csv (from 02_descriptive.R)
-# Output: ../report/tables/A*_table.tex (+ checks), S_table.tex
-#         ../report/figures/A*_figure.pdf (+ diagnostics)
-# Packages: ggplot2, sandwich, lmtest.  Run from the "analysis" folder.
-# alpha = .05 throughout. Hypotheses were fixed BEFORE looking at the data
-# (they are written at the top of each block). Nothing here is exploratory
-# unless it is labelled so.
+# 03_analysis.R - answers research questions A1-A10
+# Run from the repository root or the analysis folder, after 02_descriptive.R.
 # ============================================================
-if (!file.exists("interim/helpers.R") && file.exists("analysis/interim/helpers.R")) setwd("analysis")
-source("interim/helpers.R")
+if (file.exists("analysis/helpers.R")) {
+  setwd("analysis")
+} else if (!file.exists("helpers.R")) {
+  stop("Cannot find analysis/helpers.R. Run from the repository root ",
+       "or the analysis folder.")
+}
+source("helpers.R")
 setup_dirs()
 for (pk in c("sandwich", "lmtest"))
   if (!requireNamespace(pk, quietly = TRUE)) stop("Please run: install.packages('", pk, "')")
@@ -18,6 +17,9 @@ d <- load_data(); N <- nrow(d)
 cat("Cafes in dataset.csv:", N, "\n")
 
 # ---- parametric / non-parametric decisions come from the descriptive table ----
+if (!file.exists("interim/D_decisions.csv")) {
+  stop("Missing interim/D_decisions.csv. Run 02_descriptive.R before 03_analysis.R.")
+}
 dec <- read.csv("interim/D_decisions.csv", stringsAsFactors = FALSE)
 get_dec <- function(variable, groups, col) {
   r <- dec[dec$variable == variable & dec$group %in% groups, ]
