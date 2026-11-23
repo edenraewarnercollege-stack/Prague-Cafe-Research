@@ -1,140 +1,156 @@
-# =====================================================================
-# 01_cleaning.R  --  raw data -> cleaned data set
-# Run from the repository root. Raw file is never edited by hand.
-# NOTE: starter version. Check every step against YOUR understanding;
-# you must be able to explain each line at the defense.
-# =====================================================================
-library(tidyverse)
+# ============================================================
+# 01_cleaning.R - clean the collected raw CSV
+# Run from the repository root:
+#   source("analysis/01_cleaning.R")
+#
+# This creates cafes_clean.csv as a cleaned source-data export.
+# The A1-A10 analyses use the supplied analysis/dataset.csv, which
+# contains the project's prepared analysis variables.
+# ============================================================
+
+required_packages <- c("readr", "dplyr", "stringr", "lubridate")
+missing_packages <- required_packages[
+  !vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)
+]
+if (length(missing_packages)) {
+  stop("Install required packages first: ",
+       paste(missing_packages, collapse = ", "))
+}
+
+library(dplyr)
+library(stringr)
+library(readr)
 library(lubridate)
 
-raw_path   <- "analysis/2__Data_Collection_Sheet_-_Sheet1.csv"
-clean_path <- "analysis/cafes_clean.csv"
-
-raw <- read_csv(raw_path, col_types = cols(.default = col_character()),
-                na = c("", "NA"))
-
-# We log every decision: what we did and how many cafes/cells it touched.
-log_tbl <- tibble(step = character(), n_affected = integer())
-log_step <- function(step, n) {
-  log_tbl <<- add_row(log_tbl, step = step, n_affected = as.integer(n))
-}
-log_step("Rows in raw file", nrow(raw))
-
-# ---- 1. Drop empty rows -------------------------------------------------
-# The sheet has pre-filled formula columns (distance, lat, lon) in rows
-# with no cafe, so "empty" = no cafe name.
-df <- raw %>% filter(!is.na(`Cafe name`))
-log_step("Empty rows dropped", nrow(raw) - nrow(df))
-
-# ---- 2. Trim whitespace everywhere (e.g. "Prague 3 ", "Joseph Muchnick ")
-df <- df %>% mutate(across(where(is.character), str_squish))
-
-# ---- 3. Harmonise district number ("prague 1", "prauge 1", "Prage 7") ---
-district_before <- df$`District (number)`
-df <- df %>%
-  mutate(district_num = str_extract(`District (number)`, "\\d+"),
-         district     = paste("Prague", district_num))
-log_step("District labels changed by harmonising",
-         sum(district_before != df$district, na.rm = TRUE))
-
-# ---- 4. Prices: several values in one cell -> FIRST listed price --------
-# Rule (from the brief): "85, 95, 105", "65/40", "55,70" -> first number.
-# "na"/"NA" -> missing. Anything else numeric stays.
-first_price <- function(x) {
-  x <- str_to_lower(x)
-  x[x %in% c("na", "n/a")] <- NA
-  as.numeric(str_extract(x, "\\d+(\\.\\d+)?"))
-}
-price_cols <- c(espresso   = "Espresso Price in CZK (dine-in)",
-                cappuccino = "Cappuccino Price in CZK (normal milk, dine-in)",
-                flat_white = "Flat White Price in CZK (normal milk, dine-in)",
-                filter     = "Filter/Batch (in CZK, dine-in)")
-for (nm in names(price_cols)) {
-  orig <- df[[price_cols[[nm]]]]
-  df[[nm]] <- first_price(orig)
-  log_step(paste("Multi-value price cells -> first price:", nm),
-           sum(str_detect(orig, "[,/]"), na.rm = TRUE))
-}
-
-# ---- 5. Number of ratings: remove thousands separator -------------------
-nr_orig <- df$`Number of ratings (Google)`
-df$n_ratings <- as.numeric(str_remove_all(nr_orig, ","))
-log_step("Number of ratings: thousands separator removed",
-         sum(str_detect(nr_orig, ","), na.rm = TRUE))
-
-# ---- 6. Café type: blank -> missing, clean factor -----------------------
-df <- df %>%
-  mutate(cafe_type = factor(na_if(`Cafe Type`, ""),
-                            levels = c("Independent", "Local Chain",
-                                       "International Chain")))
-log_step("Cafe type missing", sum(is.na(df$cafe_type)))
-
-# ---- 7. Numeric columns -------------------------------------------------
-df <- df %>%
-  mutate(seats_in  = as.numeric(`Seating Places Inside`),
-         seats_out = as.numeric(`Seating Places Outside`),
-         rating    = as.numeric(`Rating (Google)`),
-         roastery  = as.numeric(`Is Roastery (0/1)`),
-         dist_km   = as.numeric(`Distance from Pražský Orloj`),
-         lat       = as.numeric(Latitude),
-         lon       = as.numeric(Longitude))
-log_step("Roastery missing (kept as NA, not set to 0)", sum(is.na(df$roastery)))
-
-# ---- 8. Visit date: mixed formats ("9/22/2026" and "9/22/26") -----------
-df$visit <- parse_date_time(df$`Date and time of visit`,
-                            orders = c("mdY HMS", "mdy HMS", "mdY HM", "mdy HM"))
-log_step("Visit dates that failed to parse", sum(is.na(df$visit)))
-
-# ---- 9. Derived variables (log(x+1) as required by the brief) -----------
-df <- df %>%
-  mutate(log_ratings   = log(n_ratings + 1),
-         log_seats_in  = log(seats_in + 1),
-         log_seats_out = log(seats_out + 1),
-         prague1       = as.integer(district == "Prague 1"),
-         chain         = as.integer(cafe_type != "Independent"),   # local + intl
-         outdoor       = as.integer(seats_out >= 1),
-         district_big  = district %in% paste("Prague", c(1, 2, 3, 5, 7, 8)))
-
-# Duplicate check (the brief says duplicates do not count)
-dups <- df %>% count(`Link to GMaps (Share -> Link to Share)`) %>% filter(n > 1)
-log_step("Duplicate cafes (same Maps link) -- INVESTIGATE", nrow(dups))
-
-# ---- 10. Keep only analysis columns and write ---------------------------
-clean <- df %>%
-  transmute(student = `Name`, visit, district, district_name = `District (name)`,
-            cafe = `Cafe name`, lat, lon, dist_km,
-            espresso, cappuccino, flat_white, filter,
-            seats_in, seats_out, rating, n_ratings,
-            cafe_type, roastery, note = Note,
-            log_ratings, log_seats_in, log_seats_out,
-            prague1, chain, outdoor, district_big)
-
-write_csv(clean, clean_path)
-dir.create("report/tables", recursive = TRUE, showWarnings = FALSE)
-write_csv(log_tbl, "analysis/cleaning_log.csv")
-print(log_tbl, n = Inf)
-cat("Clean rows:", nrow(clean), "\n")
-
-# =====================================================================
-# 01_cleaning.R  --  raw data -> cleaned data set
-# Run from the repository root. Raw file is never edited by hand.
-# NOTE: starter version. Check every step against YOUR understanding;
-# you must be able to explain each line at the defense.
-# =====================================================================
-library(tidyverse)
-library(lubridate)
-
-raw_path   <- "analysis/2__Data_Collection_Sheet_-_Sheet1.csv"
-clean_path <- "analysis/cafes_clean.csv"
+raw_path <- file.path("analysis", "raw_data.csv")
+clean_path <- file.path("analysis", "cafes_clean.csv")
 
 if (!file.exists(raw_path)) {
-  stop("Raw file not found at '", raw_path, "'. Working directory is: ", getwd(),
-       "\nPut the CSV in an 'analysis' folder and set the working directory ",
-       "to the repository root (or edit raw_path).")
+  stop("Cannot find ", raw_path,
+       ". Run this script from the repository root directory.")
 }
 
-raw <- read_csv(raw_path, col_types = cols(.default = col_character()),
-                na = c("", "NA"))
+raw <- read_csv(
+  raw_path,
+  col_types = cols(.default = col_character()),
+  na = c("", "NA", "N/A"),
+  show_col_types = FALSE
+)
 
-# Rename the column with accented letters so no accents appear in our code
-# (accents in a script can break on Windows depending on file
+required_columns <- c(
+  "Name", "Date and time of visit", "District (number)", "District (name)",
+  "Cafe name", "Link to GMaps (Share -> Link to Share)",
+  "Espresso Price in CZK (dine-in)",
+  "Cappuccino Price in CZK (normal milk, dine-in)",
+  "Flat White Price in CZK (normal milk, dine-in)",
+  "Filter/Batch (in CZK, dine-in)", "Seating Places Inside",
+  "Seating Places Outside", "Rating (Google)",
+  "Number of ratings (Google)", "Cafe Type", "Is Roastery (0/1)",
+  "Distance from Pražský Orloj", "Latitude", "Longitude", "Note"
+)
+missing_columns <- setdiff(required_columns, names(raw))
+if (length(missing_columns)) {
+  stop("The raw CSV is missing expected column(s): ",
+       paste(missing_columns, collapse = ", "))
+}
+
+# Remove rows without a cafe name and trim text fields.
+df <- raw %>%
+  filter(!is.na(`Cafe name`), str_squish(`Cafe name`) != "") %>%
+  mutate(across(where(is.character), str_squish))
+
+# Convert a price cell to its first listed numeric price.
+first_price <- function(x) {
+  x <- str_to_lower(x)
+  x[x %in% c("na", "n/a", "")] <- NA_character_
+  suppressWarnings(as.numeric(str_extract(x, "[0-9]+(?:\\.[0-9]+)?")))
+}
+
+df <- df %>%
+  mutate(
+    district_num = str_extract(`District (number)`, "[0-9]+"),
+    district = if_else(
+      is.na(district_num), NA_character_, paste("Prague", district_num)
+    ),
+    espresso = first_price(`Espresso Price in CZK (dine-in)`),
+    cappuccino = first_price(`Cappuccino Price in CZK (normal milk, dine-in)`),
+    flat_white = first_price(`Flat White Price in CZK (normal milk, dine-in)`),
+    filter_price = first_price(`Filter/Batch (in CZK, dine-in)`),
+    n_ratings = suppressWarnings(as.numeric(
+      str_remove_all(`Number of ratings (Google)`, ",")
+    )),
+    seats_in = suppressWarnings(as.numeric(`Seating Places Inside`)),
+    seats_out = suppressWarnings(as.numeric(`Seating Places Outside`)),
+    rating = suppressWarnings(as.numeric(`Rating (Google)`)),
+    roastery = suppressWarnings(as.numeric(`Is Roastery (0/1)`)),
+    dist_km = suppressWarnings(as.numeric(`Distance from Pražský Orloj`)),
+    lat = suppressWarnings(as.numeric(Latitude)),
+    lon = suppressWarnings(as.numeric(Longitude)),
+    visit = parse_date_time(
+      `Date and time of visit`,
+      orders = c("mdY HMS", "mdy HMS", "mdY HM", "mdy HM"),
+      quiet = TRUE
+    ),
+    cafe_type = na_if(`Cafe Type`, "")
+  ) %>%
+  mutate(
+    cafe_type = factor(
+      cafe_type,
+      levels = c("Independent", "Local Chain", "International Chain")
+    ),
+    log_ratings = log(n_ratings + 1),
+    log_seats_in = log(seats_in + 1),
+    log_seats_out = log(seats_out + 1),
+    prague1 = if_else(is.na(district), NA_integer_,
+                      as.integer(district == "Prague 1")),
+    chain = if_else(is.na(cafe_type), NA_integer_,
+                    as.integer(cafe_type != "Independent")),
+    outdoor = if_else(is.na(seats_out), NA_integer_,
+                      as.integer(seats_out >= 1)),
+    district_big = district %in% paste("Prague", c(1, 2, 3, 5, 7, 8))
+  )
+
+# Keep one row per Google Maps link where a link is available.
+# Rows without a Maps link are retained because no reliable duplicate key exists.
+linked <- !is.na(df[`Link to GMaps (Share -> Link to Share)`]) &
+  df[`Link to GMaps (Share -> Link to Share)`] != ""
+duplicate_rows <- duplicated(
+  df[`Link to GMaps (Share -> Link to Share)`] & linked
+)
+# Report possible duplicates without silently deleting observations.
+duplicate_links <- df %>%
+  filter(linked) %>%
+  count(`Link to GMaps (Share -> Link to Share)`) %>%
+  filter(n > 1)
+
+clean <- df %>%
+  transmute(
+    student = Name, visit, district, district_name = `District (name)`,
+    cafe = `Cafe name`, lat, lon, dist_km,
+    espresso, cappuccino, flat_white, filter = filter_price,
+    seats_in, seats_out, rating, n_ratings,
+    cafe_type, roastery, note = Note,
+    log_ratings, log_seats_in, log_seats_out,
+    prague1, chain, outdoor, district_big
+  )
+
+write_csv(clean, clean_path, na = "")
+dir.create("analysis", showWarnings = FALSE, recursive = TRUE)
+cleaning_log <- tibble(
+  item = c("Rows in raw CSV", "Rows without cafe name removed",
+           "Rows in cleaned export", "Unique duplicate Maps links flagged",
+           "Visit dates that failed to parse"),
+  value = c(
+    nrow(raw),
+    nrow(raw) - nrow(df),
+    nrow(clean),
+    nrow(duplicate_links),
+    sum(is.na(df$visit))
+  )
+)
+write_csv(cleaning_log, "analysis/cleaning_log.csv", na = "")
+
+cat("Cleaned export written to:", clean_path, "\n")
+cat("Rows in cleaned export:", nrow(clean), "\n")
+cat("Potential duplicate Maps links flagged:", nrow(duplicate_links), "\n")
+cat("Cleaning log written to: analysis/cleaning_log.csv\n")
