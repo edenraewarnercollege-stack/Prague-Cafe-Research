@@ -110,14 +110,7 @@ df <- df %>%
     district_big = district %in% paste("Prague", c(1, 2, 3, 5, 7, 8))
   )
 
-# Keep one row per Google Maps link where a link is available.
-# Rows without a Maps link are retained because no reliable duplicate key exists.
-linked <- !is.na(df[`Link to GMaps (Share -> Link to Share)`]) &
-  df[`Link to GMaps (Share -> Link to Share)`] != ""
-duplicate_rows <- duplicated(
-  df[`Link to GMaps (Share -> Link to Share)`] & linked
-)
-# Report possible duplicates without silently deleting observations.
+# Flag repeated Google Maps links for review; do not silently delete rows.
 duplicate_links <- df %>%
   filter(linked) %>%
   count(`Link to GMaps (Share -> Link to Share)`) %>%
