@@ -417,3 +417,6 @@ cat("\n\n=========== Summary of all analyses ===========\n")
 options(width = 220); sh(SUM)
 write_tex(SUM, "S_table", align = "lllllllrr")
 cat("\nAll tables and figures saved in ../report/\n")
+
+# Return to the repository root so scripts can be sourced sequentially.
+setwd("..")
