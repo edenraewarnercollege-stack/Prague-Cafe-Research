@@ -17,15 +17,13 @@ This repository contains the submitted project on dine-in coffee prices and caf�
 
 ## Running the R scripts
 
-From the repository root in RStudio, run the scripts in this order:
+For a one-click run in RStudio, open the repository folder as the working directory and run:
 
 ```r
-source("analysis/01_cleaning.R")
-source("analysis/02_descriptive.R")
-source("analysis/03_analysis.R")
+source("analysis/run_all.R")
 ```
 
-The scripts use the files and helper functions in `analysis/`. See [`analysis/README.md`](analysis/README.md) for package requirements and details about the inputs and outputs. The cleaning script writes a separate cleaned export (`analysis/cafes_clean.csv`); the A1–A10 analysis scripts use the prepared `analysis/dataset.csv`.
+The runner executes the three scripts in order. Missing packages are installed automatically when possible; an internet connection and permission to install packages are required on first use. The cleaning script writes a separate cleaned export (`analysis/cafes_clean.csv`); the A1–A10 analysis scripts use the prepared `analysis/dataset.csv`. See [`analysis/README.md`](analysis/README.md) for details.
 
 ## Notes on reproducibility
 
