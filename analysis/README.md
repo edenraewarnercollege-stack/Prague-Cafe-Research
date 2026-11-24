@@ -9,22 +9,20 @@ This folder contains the collected café data, the prepared analysis dataset, R 
 - `01_cleaning.R` — cleans `raw_data.csv` and writes `cafes_clean.csv` plus `cleaning_log.csv`.
 - `02_descriptive.R` — produces descriptive statistics, diagnostic plots and the method-decision file.
 - `03_analysis.R` — runs analyses A1–A10 using the prepared `dataset.csv`.
+- `run_all.R` — one-click entry point that runs scripts 01–03 in order.
 - `helpers.R` — shared functions used by scripts 02 and 03.
 - `main (1).tex` — LaTeX source for the written report.
 
 ## How to run
 
-1. Install R and the packages used by the scripts. Script 01 checks for `readr`, `dplyr`, `stringr` and `lubridate`. Script 02 uses `ggplot2` (and its dependencies). Script 03 additionally requires `sandwich` and `lmtest`.
-2. Open the repository folder as the working directory in R or RStudio.
-3. Run the scripts in this order:
+1. Install R (or RStudio) and open the repository folder as the working directory.
+2. Run this single command:
 
 ```r
-source("analysis/01_cleaning.R")
-source("analysis/02_descriptive.R")
-source("analysis/03_analysis.R")
+source("analysis/run_all.R")
 ```
 
-Scripts 02 and 03 also support being run from inside the `analysis` folder. Script 02 creates `analysis/interim/D_decisions.csv`, which script 03 requires.
+The runner executes scripts 01, 02 and 03 in order. Each script checks for its required packages and attempts to install any that are missing from CRAN. An internet connection and permission to install packages are needed on first use. Script 02 creates `analysis/interim/D_decisions.csv`, which script 03 requires.
 
 ## Important dataset note
 
