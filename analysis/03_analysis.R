@@ -10,8 +10,20 @@ if (file.exists("analysis/helpers.R")) {
 }
 source("helpers.R")
 setup_dirs()
-for (pk in c("sandwich", "lmtest"))
-  if (!requireNamespace(pk, quietly = TRUE)) stop("Please run: install.packages('", pk, "')")
+analysis_packages <- c("sandwich", "lmtest")
+missing_analysis_packages <- analysis_packages[
+  !vapply(analysis_packages, requireNamespace, logical(1), quietly = TRUE)
+]
+if (length(missing_analysis_packages)) {
+  message("Installing missing packages: ", paste(missing_analysis_packages, collapse = ", "))
+  install.packages(missing_analysis_packages, repos = "https://cloud.r-project.org")
+}
+still_missing <- analysis_packages[
+  !vapply(analysis_packages, requireNamespace, logical(1), quietly = TRUE)
+]
+if (length(still_missing)) {
+  stop("Could not install required packages: ", paste(still_missing, collapse = ", "))
+}
 
 d <- load_data(); N <- nrow(d)
 cat("Cafes in dataset.csv:", N, "\n")
