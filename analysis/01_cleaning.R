@@ -118,7 +118,10 @@ df <- df %>%
 
 # Flag repeated Google Maps links for review; do not silently delete rows.
 duplicate_links <- df %>%
-  filter(linked) %>%
+  filter(
+    !is.na(`Link to GMaps (Share -> Link to Share)`),
+    str_squish(`Link to GMaps (Share -> Link to Share)`) != ""
+  ) %>%
   count(`Link to GMaps (Share -> Link to Share)`) %>%
   filter(n > 1)
 
