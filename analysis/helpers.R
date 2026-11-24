@@ -2,6 +2,13 @@
 # interim/helpers.R - functions shared by 02_descriptive.R and 03_analysis.R
 # (sourced by those scripts; not run on its own). ASCII only.
 # ============================================================
+if (!requireNamespace("ggplot2", quietly = TRUE)) {
+  message("Installing missing package: ggplot2")
+  install.packages("ggplot2", repos = "https://cloud.r-project.org")
+}
+if (!requireNamespace("ggplot2", quietly = TRUE)) {
+  stop("Could not install ggplot2. Check your internet connection and permissions.")
+}
 suppressPackageStartupMessages(library(ggplot2))
 theme_set(theme_bw(base_size = 11))
 
