@@ -13,8 +13,14 @@ missing_packages <- required_packages[
   !vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)
 ]
 if (length(missing_packages)) {
-  stop("Install required packages first: ",
-       paste(missing_packages, collapse = ", "))
+  message("Installing missing packages: ", paste(missing_packages, collapse = ", "))
+  install.packages(missing_packages, repos = "https://cloud.r-project.org")
+}
+still_missing <- required_packages[
+  !vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)
+]
+if (length(still_missing)) {
+  stop("Could not install required packages: ", paste(still_missing, collapse = ", "))
 }
 
 library(dplyr)
